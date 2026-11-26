@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Program za ispitivanje</title>
+<style>
+  :root{--bg:#EEF3F9;--kartica:#fff;--prim:#0B7FD9;--prim-t:#075FA6;--prim-s:#DCEBFA;--tekst:#1E293B;--siva:#64748B;
+        --rub:#D3DCE8;--hover:#E6F2FD;--ok:#16A34A;--ok-s:#DCFCE7;--ok-t:#166534;--gr:#DC2626;--gr-s:#FEE2E2;--gr-t:#991B1B;
+        --upoz:#F59E0B;--upoz-s:#FEF3C7;--plava:#059EFA}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tekst);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;min-height:100vh}
+  button{font:inherit;cursor:pointer;border-radius:8px}
+  button:disabled{cursor:default;opacity:.5}
+  .skriven{display:none!important}
+  .zag{background:var(--prim);color:#fff;padding:14px 22px}
+  .zag h1{margin:0;font-size:22px}
+  .zag .pod{color:var(--prim-s);font-size:14px;margin-top:2px}
+  .sredina{max-width:900px;margin:0 auto;padding:18px}
+  .gumb{background:#fff;border:1px solid var(--rub);color:var(--tekst);padding:9px 18px}
+  .gumb:hover:not(:disabled){background:var(--hover);border-color:#9CC7EF}
+  .gumb.prim{background:var(--prim);border-color:var(--prim);color:#fff;font-weight:700}
+  .gumb.prim:hover:not(:disabled){background:#1A8FEA}
+  .gumb.opasno{color:var(--gr)}
+  .gumb.joker{color:#92400E;font-weight:700}
+
+  /* početni */
+  #pocetni .naslov{background:var(--prim);color:#fff;text-align:center;padding:18px 10px 14px}
+  #pocetni .naslov h1{margin:0;font-size:clamp(24px,5vw,32px)}
+  #pocetni .naslov div{color:var(--prim-s);font-size:14px}
+  .panel{background:var(--plava);max-width:520px;margin:24px auto 0;border-radius:12px;padding:14px 20px 22px;text-align:center}
+  .racunalo{position:relative;display:inline-block;max-width:100%}
+  .racunalo img{display:block;max-width:100%}
+  .zaslon{position:absolute;left:23%;top:12%;width:40%;font:bold clamp(10px,2.6vw,14px) Consolas,"Courier New",monospace;
+          color:#064E3B;text-align:left;white-space:pre-wrap}
+  .ispit-gumb{background:#fff;color:var(--prim-t);font-size:22px;font-weight:800;border:0;padding:10px 40px;margin-top:8px;letter-spacing:4px}
+  .ispit-gumb:hover{background:var(--prim-s)}
+  .status{text-align:center;color:var(--siva);font-size:13px;margin:12px}
+
+  /* kartice izbora */
+  .kartica-izbor{display:flex;width:100%;background:#fff;border:1px solid var(--rub);margin:8px 0;padding:0;text-align:left;overflow:hidden}
+  .kartica-izbor:hover:not(:disabled){background:var(--hover);border-color:var(--prim)}
+  .kartica-izbor .znak{width:64px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:800}
+  .kartica-izbor .t{padding:12px 16px}
+  .kartica-izbor b{display:block;font-size:18px}
+  .kartica-izbor span{color:var(--siva);font-size:13px}
+
+  /* obrazac */
+  .obrazac{background:#fff;border:1px solid var(--rub);border-radius:10px;padding:18px 22px;max-width:520px;margin:0 auto}
+  .obrazac label{display:block;color:var(--siva);font-size:13px;margin-top:10px}
+  .obrazac input{width:100%;font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--rub);border-radius:6px;margin-top:3px}
+  .obrazac input:focus{outline:none;border-color:var(--prim)}
+  .gumbi{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+
+  /* ispit */
+  .vrh{background:var(--prim);color:#fff;padding:10px 18px 12px}
+  .vrh .red{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .vrh b{font-size:17px}
+  .vrh span{color:var(--prim-s);font-size:14px}
+  .napredak{height:6px;background:var(--prim-t);border-radius:3px;margin-top:8px;overflow:hidden}
+  .napredak div{height:100%;background:#fff;width:0;transition:width .3s}
+  .tijelo{display:flex;gap:16px;max-width:1000px;margin:0 auto;padding:16px}
+  .glavno{flex:1;min-width:0}
+  .pitanje{background:#fff;border:1px solid var(--rub);border-radius:10px;padding:18px 20px;text-align:center}
+  .pitanje .tekst{font-size:clamp(18px,3vw,22px);font-weight:700;white-space:pre-wrap}
+  .pitanje img{max-width:100%;max-height:300px;margin-top:14px}
+  .odgovori{margin-top:14px}
+  .odgovor{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rub);padding:11px 16px;margin:6px 0;font-size:17px}
+  .odgovor:hover{background:var(--hover);border-color:var(--prim)}
+  .odgovor b{display:inline-block;width:2em}
+  .napomena{color:var(--siva);font-style:italic;text-align:center;margin-top:12px}
+  .unos{display:block;width:min(520px,100%);margin:10px auto;font:inherit;font-size:20px;text-align:center;padding:8px;border:1px solid var(--rub);border-radius:8px}
+  .unos:focus{outline:none;border-color:var(--prim)}
+  .poruka{margin-top:12px;padding:10px;border-radius:8px;font-weight:700;font-size:18px;text-align:center;white-space:pre-line}
+  .poruka.ok{background:var(--ok-s);color:var(--ok-t)} .poruka.greska{background:var(--gr-s);color:var(--gr-t)}
+  .poruka.info{background:#E2E8F0} .poruka.zlato{background:var(--upoz-s);color:#92400E}
+  .vrijeme{height:10px;background:var(--upoz-s);border-radius:5px;margin:14px 60px 0;overflow:hidden}
+  .vrijeme div{height:100%;background:var(--upoz);width:0;transition:width .3s linear}
+  .centar{text-align:center;margin-top:12px}
+  .ljestvica{width:220px;flex-shrink:0}
+  .ljestvica .prag{color:var(--siva);font-size:12px;font-weight:700;margin-bottom:8px;white-space:pre-line}
+  .ljestvica .ok{color:var(--ok)}
+  .stepenice{background:var(--rub);padding:1px;border-radius:6px;overflow:hidden}
+  .stepenica{font-size:13px;padding:3px 10px;margin-bottom:1px}
+  .stepenica.razmak{margin-top:4px}
+  .dno{display:flex;justify-content:space-between;max-width:1000px;margin:0 auto;padding:0 16px 16px;gap:10px}
+  @media (max-width:700px){.tijelo{flex-direction:column}.ljestvica{width:100%}.stepenice{display:none}.vrijeme{margin:14px 0 0}}
+
+  /* izvještaj */
+  .izvj{max-width:900px;margin:20px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(15,40,80,.10)}
+  .izvj .z{background:var(--prim);color:#fff;padding:20px 26px}
+  .izvj .z h2{margin:0;font-size:22px}
+  .izvj .z div{color:var(--prim-s);font-size:14px;margin-top:4px}
+  .izvj .s{padding:20px 26px}
+  .podaci{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:16px}
+  .podaci div{font-size:13px;color:var(--siva)} .podaci b{display:block;font-size:16px;color:var(--tekst)}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{background:#E2E8F0;text-align:left;padding:8px 10px}
+  td{padding:7px 10px;border-bottom:1px solid #E5EAF1;vertical-align:top}
+  tr.ok td:first-child{border-left:4px solid var(--ok)} tr.ne td:first-child{border-left:4px solid var(--gr)}
+  tr.nn td:first-child{border-left:4px solid #CBD5E1}
+  .d{text-align:center;white-space:nowrap}
+  .kutije{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px}
+  .kut{flex:1;min-width:150px;background:#F5F8FC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px}
+  .kut span{display:block;font-size:12px;color:var(--siva)} .kut b{font-size:22px}
+  .kut.glavni{background:var(--prim);border-color:var(--prim);color:#fff} .kut.glavni span{color:var(--prim-s)}
+  .odlicno{color:#B45309;font-size:20px;margin:0 0 14px}
+  .potpis{margin-top:26px;font-size:11px;color:#94A3B8}
+  @media print{body{background:#fff}.ne-ispis{display:none!important}.izvj{box-shadow:none;margin:0}
+    .izvj .z,.kut.glavni,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+
+<!-- ============ početni zaslon ============ -->
+<section id="pocetni">
+  <div class="naslov"><h1>PROGRAM ZA ISPITIVANJE</h1><div>Petko Radulović, prof.</div></div>
+  <div class="panel">
+    <div class="racunalo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaQAAAFXCAIAAABiKK3VAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmUwOWVkYzU1LWYzNDctNDRiMS04MWQxLTZjMjg3NjU5NWQ5YgAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNo5wi57bve1tnX1KVpGP/NewAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6MmQ1MWYzNWMtZWQxNi00NDdkLWJhY2QtYzUwMjE5Y2MxOWI0bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaP4OVR1XzEMwkY+cYipWr48AAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIOgn4rDSbZHqdOivLEiCq7uGNeAuepRFl1sOoW9enb4GpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2j1DhqDkFxsObh5Zw2PL/4VAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggKkT+ZK+C45A5KjiiVolUprXy4eRyhW7ENdBsE4/BGYZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTplMDllZGM1NS1mMzQ3LTQ0YjEtODFkMS02YzI4NzY1OTVkOWIvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDpmNzk1N2U1MS02YTIyLTQ4Y2QtOTI1OS05YzY1MGRmNzE3ZTJyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFgg6CfisNJtkep06K8sSIKru4Y14C56lEWXWw6hb16dvgaiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIDPzChCbJ6387ZSpHDZrO5LVF10c5r0slTo6XuFoXvvSomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIPz5HRqmDBiZZRKBCMogE5LOBWQlltrkGzvkbRwinddPdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt=""><div class="zaslon" id="zaslon"></div></div>
+    <br><button class="ispit-gumb" id="kreni-ispit">I S P I T &rarr;</button>
+  </div>
+  <div class="status" id="status">Učitavam pitanja…</div>
+</section>
+
+<!-- ============ izbor vrste ispita ============ -->
+<section id="izbor" class="skriven">
+  <div class="zag"><h1>ISPIT</h1><div class="pod">Odaberi vrstu ispita</div></div>
+  <div class="sredina" style="max-width:520px">
+    <button class="kartica-izbor" data-vrsta="odabira"><div class="znak" style="background:var(--prim)">?</div>
+      <div class="t"><b>Pitanja odabira</b><span id="opis-odabira"></span></div></button>
+    <button class="kartica-izbor" data-vrsta="nadopunjavanja"><div class="znak" style="background:#0D9488">&#9998;</div>
+      <div class="t"><b>Pitanja nadopunjavanja</b><span id="opis-nadopunjavanja"></span></div></button>
+    <button class="kartica-izbor" data-vrsta="odlikas"><div class="znak" style="background:#D97706">&#9733;</div>
+      <div class="t"><b>ODLIKAŠ</b><span id="opis-odlikas"></span></div></button>
+    <div class="gumbi"><button class="gumb" data-natrag>Povrat</button></div>
+  </div>
+</section>
+
+<!-- ============ podaci učenika ============ -->
+<section id="ucenik" class="skriven">
+  <div class="zag"><h1 id="u-naslov">Ispit</h1><div class="pod">Upiši svoje podatke</div></div>
+  <div class="sredina">
+    <form class="obrazac" id="u-obrazac" autocomplete="off">
+      <label>Prezime i ime<input id="u-prezime" required></label>
+      <label>Razred<input id="u-razred" required></label>
+      <label>Predmet<input id="u-predmet" required></label>
+      <label>Datum<input id="u-datum" required></label>
+      <div class="gumbi"><button type="button" class="gumb" data-natrag>Odustati</button>
+        <button type="submit" class="gumb prim">Dalje &rarr;</button></div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ ispit ============ -->
+<section id="ispit" class="skriven">
+  <div class="vrh"><div class="red"><b id="i-stanje"></b><span id="i-stanje2"></span></div>
+    <div class="napredak"><div id="i-napredak"></div></div></div>
+  <div class="tijelo">
+    <div class="glavno">
+      <div class="pitanje"><div class="tekst" id="i-tekst"></div><img id="i-slika" class="skriven" alt=""></div>
+      <div class="odgovori" id="i-odgovori"></div>
+      <div id="i-nadopuna" class="skriven">
+        <div class="napomena" id="i-napomena"></div>
+        <input class="unos" id="i-unos" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="centar"><button class="gumb prim" id="i-provjeri">KRENI!</button></div>
+      </div>
+      <div class="poruka skriven" id="i-poruka"></div>
+      <div class="vrijeme skriven" id="i-vrijeme"><div></div></div>
+      <div class="centar"><button class="gumb prim skriven" id="i-dalje">Dalje &rarr;</button></div>
+    </div>
+    <div class="ljestvica skriven" id="i-ljestvica">
+      <div class="prag" id="i-prag"></div>
+      <div class="stepenice" id="i-stepenice"></div>
+    </div>
+  </div>
+  <div class="dno skriven" id="i-dno">
+    <button class="gumb joker" id="i-j1">JOKER 1 (pola-pola)</button>
+    <button class="gumb opasno" id="i-odustani">ODUSTATI</button>
+    <button class="gumb joker" id="i-j2">JOKER 2 (pola-pola)</button>
+  </div>
+</section>
+
+<!-- ============ izvještaj ============ -->
+<section id="izvjestaj" class="skriven">
+  <div class="gumbi ne-ispis" style="margin-top:18px">
+    <button class="gumb prim" onclick="window.print()">&#128424; Ispiši</button>
+    <button class="gumb" id="r-preuzmi">Spremi izvještaj</button>
+    <button class="gumb" id="r-novi">Novi ispit</button>
+  </div>
+  <div class="izvj" id="r-sadrzaj"></div>
+</section>
+
+<script>
+/* PROGRAM ZA ISPITIVANJE – web inačica (Petko Radulović, prof.).
+   Pitanja se čitaju iz pitanja.json (izvozi ga program ISPITNOV na računalu).
+   Pravila su ista kao u programu ISPITNOV. Rezultati se ne spremaju na internet:
+   na kraju se prikaže izvještaj koji se ispiše ili spremi. */
+const KORAK = {odabira:1500, nadopunjavanja:1000, odlikas:3000};
+const RAZINE = [2,2,2,2,2,2,2,2,3,3,3,3,4,4,4,5];
+const ODLIKAS_MIN = {2:8, 3:4, 4:3, 5:2};
+const NE_ZNAM = 'Ne znam';
+const $ = id => document.getElementById(id);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mijesaj = a => { a = a.slice(); for (let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; };
+const norm = t => String(t ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean).join(' ');
+
+let P = null;               // podaci iz pitanja.json
+let vrsta, ucenik, rez, timerId = null, vrijeme = 0;
+
+function prikazi(id){
+  for (const s of ['pocetni','izbor','ucenik','ispit','izvjestaj']) $(s).classList.toggle('skriven', s !== id);
+  window.scrollTo(0,0);
+}
+
+// ---------- početni zaslon s trepćućim kursorom
+const PORUKA = 'C:\\> JA SAM NOVI UČITELJ.\n\nKLIKNI NA GUMB\nI S P I T';
+let takt = 0;
+setInterval(() => { takt++; $('zaslon').textContent = PORUKA + (takt % 2 ? '_' : ' '); }, 550);
+$('kreni-ispit').onclick = () => { if (P) { pripremiIzbor(); prikazi('izbor'); } };
+document.querySelectorAll('[data-natrag]').forEach(b => b.onclick = () => prikazi('pocetni'));
+
+fetch('pitanja.json?t=' + Date.now(), {cache:'no-store'})
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(d => { P = d;
+    $('status').textContent = `Pitanja za ispit: odabira ${d.odabira.length} · nadopunjavanja ${d.nadopunjavanja.length} · ` +
+      `broj na ispitu: ${d.broj_pitanja} · timer ${d.timer ? 'uključen' : 'isključen'} · pitanja od ${d.izvezeno}`; })
+  .catch(e => { $('status').textContent = 'Pitanja se ne mogu učitati (' + e.message + '). Provjerite internetsku vezu i osvježite stranicu.';
+                $('status').style.color = 'var(--gr)'; });
+
+// ---------- izbor vrste
+function provjera(v){
+  if (v === 'odlikas'){
+    for (const o of [2,3,4,5]){ const n = P.odabira.filter(p => p.ocjena === o).length;
+      if (n < ODLIKAS_MIN[o]) return `Premalo pitanja za ocjenu ${o} (ima ${n}, treba barem ${ODLIKAS_MIN[o]}).`; }
+    return null;
+  }
+  const n = P[v].length;
+  if (n === 0) return 'Učitelj još nije odabrao pitanja.';
+  if (n < P.broj_pitanja) return `Odabrano je ${n} pitanja, a na ispitu ih treba biti ${P.broj_pitanja}.`;
+  return null;
+}
+function pripremiIzbor(){
+  const opisi = {odabira:'Između ponuđenih odgovora odaberi točan.', nadopunjavanja:'Sam upiši odgovor na pitanje.',
+                 odlikas:'16 pitanja do petice, dva jokera pola-pola.'};
+  document.querySelectorAll('[data-vrsta]').forEach(b => {
+    const v = b.dataset.vrsta, g = provjera(v);
+    $('opis-' + v).textContent = g || opisi[v];
+    $('opis-' + v).style.color = g ? 'var(--gr)' : '';
+    b.disabled = !!g;
+    b.onclick = () => { vrsta = v; otvoriUcenika(); };
+  });
+}
+
+// ---------- podaci učenika
+function otvoriUcenika(){
+  $('u-naslov').textContent = {odabira:'Pitanja odabira', nadopunjavanja:'Pitanja nadopunjavanja', odlikas:'ODLIKAŠ'}[vrsta];
+  const izvor = vrsta === 'nadopunjavanja' ? P.nadopunjavanja : P.odabira;
+  if (!$('u-predmet').value) $('u-predmet').value = (izvor[0] && izvor[0].predmet) || '';
+  const d = new Date(); $('u-datum').value = `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}.`;
+  prikazi('ucenik'); $('u-prezime').focus();
+}
+$('u-obrazac').onsubmit = e => {
+  e.preventDefault();
+  ucenik = {prezime:$('u-prezime').value.trim(), razred:$('u-razred').value.trim(),
+            predmet:$('u-predmet').value.trim(), datum:$('u-datum').value.trim()};
+  if (!ucenik.prezime || !ucenik.razred || !ucenik.predmet) return;
+  zapocni();
+};
+
+// ---------- zajednički dijelovi ispita
+function javi(t, k){ const p = $('i-poruka'); p.textContent = t; p.className = 'poruka ' + (k || 'info'); p.classList.toggle('skriven', !t); }
+function postaviSliku(s){ const i = $('i-slika'); if (s){ i.src = s; i.classList.remove('skriven'); } else i.classList.add('skriven'); }
+function napredak(br, uk){ $('i-napredak').style.width = (100*Math.min(br,uk)/Math.max(uk,1)) + '%'; }
+function zbroj(){ const o = rez.redovi.reduce((a,r) => a + r.bodovi, 0), m = rez.redovi.reduce((a,r) => a + r.bodteor, 0);
+                  return [o, m, m ? o/m*100 : null]; }
+function stanjeBodova(br, uk){
+  const [o,m,p] = zbroj();
+  $('i-stanje').textContent = `Pitanje ${br} od ${uk}`;
+  $('i-stanje2').textContent = `Bodovi: ${o} / ${m}` + (p !== null ? `   ·   ${Math.round(p)} %` : '');
+  napredak(br, uk);
+}
+function zapisi(pitanje, tocan, dan, bodovi, bodteor, ocjena){ rez.redovi.push({pitanje, tocan, dan, bodovi, bodteor, ocjena}); }
+function pokreniTimer(nakon){
+  zaustaviTimer();
+  if (!P.timer){ $('i-vrijeme').classList.add('skriven'); return; }
+  vrijeme = 0; $('i-vrijeme').firstElementChild.style.width = '0%'; $('i-vrijeme').classList.remove('skriven');
+  const tik = () => { vrijeme += 5; $('i-vrijeme').firstElementChild.style.width = vrijeme + '%';
+    if (vrijeme >= 100){ timerId = null; $('i-vrijeme').classList.add('skriven'); nakon(); } else timerId = setTimeout(tik, KORAK[vrsta]); };
+  timerId = setTimeout(tik, KORAK[vrsta]);
+}
+function zaustaviTimer(){ if (timerId){ clearTimeout(timerId); timerId = null; } $('i-vrijeme').classList.add('skriven'); }
+function gumbiOdgovora(ponudeni, naredba){
+  const k = $('i-odgovori'); k.innerHTML = '';
+  ponudeni.forEach((o,i) => { const b = document.createElement('button'); b.className = 'odgovor';
+    b.innerHTML = `<b>${'ABCDEFGH'[i]})</b>${esc(o)}`; b.onclick = () => naredba(o); b.dataset.odgovor = o; k.appendChild(b); });
+}
+const PORUKE = {tocno:['✓  BRAVO! Odgovor je točan.','ok'], netocno:['✗  Odgovor nije točan.','greska'],
+                nezna:['?   ?   ?','info'], vrijeme:['⏱  V R I J E M E   J E   I S T E K L O','greska']};
+
+function zapocni(){
+  rez = {vrsta, ucenik, redovi:[], odlikas:null};
+  $('i-ljestvica').classList.toggle('skriven', vrsta !== 'odlikas');
+  $('i-dno').classList.toggle('skriven', vrsta !== 'odlikas');
+  $('i-nadopuna').classList.toggle('skriven', vrsta !== 'nadopunjavanja');
+  window.onbeforeunload = () => 'Ispit je u tijeku.';
+  prikazi('ispit');
+  if (vrsta === 'odabira') Odabira.start(); else if (vrsta === 'nadopunjavanja') Nadopuna.start(); else Odlikas.start();
+}
+$('i-dalje').onclick = () => { $('i-dalje').classList.add('skriven'); ({odabira:Odabira, odlikas:Odlikas})[vrsta].sljedece(); };
+
+// ---------- pitanja odabira
+const Odabira = {
+  start(){ this.red = mijesaj(P.odabira).slice(0, P.broj_pitanja); this.i = -1; this.sljedece(); },
+  sljedece(){
+    this.i++; javi('');
+    if (this.i >= this.red.length){ alert('Nema više pitanja'); kraj(); return; }
+    const p = this.p = this.red[this.i];
+    stanjeBodova(this.i+1, this.red.length);
+    $('i-tekst').textContent = p.pitanje; postaviSliku(p.slika);
+    gumbiOdgovora([...mijesaj([p.tocan, ...p.krivi]), p.nezna || NE_ZNAM], o => this.odgovori(o));
+    pokreniTimer(() => this.odgovori(null));
+  },
+  odgovori(o){
+    zaustaviTimer(); const p = this.p; let r;
+    if (o === null){ zapisi(p.pitanje, p.tocan, 'vrijeme je isteklo', 0, p.bodovi); r = 'vrijeme'; }
+    else if (o === p.tocan){ zapisi(p.pitanje, o, o, p.bodovi, p.bodovi); r = 'tocno'; }
+    else if (o === (p.nezna || NE_ZNAM)){ zapisi(p.pitanje, p.tocan, o, 0, p.bodovi); r = 'nezna'; }
+    else { zapisi(p.pitanje, p.tocan, o, p.bodnetoc, p.bodovi); r = 'netocno'; }
+    $('i-odgovori').innerHTML = ''; postaviSliku(null);
+    javi(...PORUKE[r]); stanjeBodova(this.i+1, this.red.length);
+    $('i-dalje').classList.remove('skriven'); $('i-dalje').focus();
+  }
+};
+
+// ---------- pitanja nadopunjavanja
+const Nadopuna = {
+  start(){ this.red = mijesaj(P.nadopunjavanja).slice(0, P.broj_pitanja); this.i = -1; this.sljedece(); },
+  sljedece(){
+    this.i++; javi('');
+    if (this.i >= this.red.length){ alert('Nema više pitanja'); kraj(); return; }
+    const p = this.p = this.red[this.i];
+    stanjeBodova(this.i+1, this.red.length);
+    $('i-tekst').textContent = p.pitanje; postaviSliku(null);
+    $('i-napomena').textContent = p.napomena || '';
+    $('i-unos').disabled = false; $('i-unos').value = ''; $('i-unos').focus();
+    $('i-provjeri').disabled = false; this.gotovo = false;
+    pokreniTimer(() => this.odgovori(null));
+  },
+  odgovori(tekst){
+    if (this.gotovo) return;
+    if (tekst !== null && !tekst.trim()) return;
+    this.gotovo = true; zaustaviTimer(); const p = this.p; let r;
+    if (tekst === null){ zapisi(p.pitanje, p.nadopuna, 'vrijeme je isteklo', 0, p.bodovi); r = 'vrijeme'; }
+    else { const t = norm(tekst), dobri = new Set([p.nadopuna, ...p.odgovori].map(norm).filter(Boolean));
+      if (dobri.has(t)){ zapisi(p.pitanje, t, t, p.bodovi, p.bodovi); r = 'tocno'; }
+      else { zapisi(p.pitanje, p.nadopuna, t, 0, p.bodovi); r = 'netocno'; } }
+    $('i-unos').disabled = true; $('i-provjeri').disabled = true;
+    javi(...PORUKE[r]); stanjeBodova(this.i+1, this.red.length);
+    setTimeout(() => this.sljedece(), 1200);
+  }
+};
+$('i-provjeri').onclick = () => Nadopuna.odgovori($('i-unos').value);
+$('i-unos').addEventListener('keydown', e => { if (e.key === 'Enter') Nadopuna.odgovori($('i-unos').value); });
+
+// ---------- ODLIKAŠ
+const BOJE = [...Array(8).fill('#FEF3C7'), ...Array(4).fill('#CFFAFE'), ...Array(3).fill('#FCE7F3'), '#FECACA'];
+const Odlikas = {
+  start(){
+    this.bazeni = {}; for (const o of [2,3,4,5]) this.bazeni[o] = mijesaj(P.odabira.filter(p => p.ocjena === o));
+    this.broj = 0; this.jokeri = 2; this.jokerNaPitanju = false; this.gotovo = false;
+    const s = $('i-stepenice'); s.innerHTML = '';
+    for (let i = 16; i >= 1; i--){ const d = document.createElement('div'); d.className = 'stepenica' + (i === 8 || i === 12 ? ' razmak' : '');
+      d.textContent = i === 16 ? '16.  ODLIKAŠ  (5)' : `${i}.  pitanje  (${RAZINE[i-1]})`; d.id = 'st' + i; s.appendChild(d); }
+    $('i-prag').textContent = 'Prvi prag je na 8. pitanju (ocjena 2)\nDrugi prag je na 12. pitanju (ocjena 3)'; $('i-prag').className = 'prag';
+    this.sljedece();
+  },
+  get osigurana(){ const t = this.broj ? this.broj-1 : 0; return t >= 12 ? 3 : t >= 8 ? 2 : 1; },
+  get zaOcjenu(){ return this.broj ? RAZINE[this.broj-1] : 2; },
+  get odustajanje(){ return this.broj < 9 ? 1 : this.broj === 9 ? 2 : this.broj <= 13 ? 3 : 4; },
+  ljestvica(){
+    for (let i = 1; i <= 16; i++){ const d = $('st'+i);
+      d.style.background = i < this.broj ? '#BBF7D0' : i === this.broj ? 'var(--prim)' : BOJE[i-1];
+      d.style.color = i === this.broj ? '#fff' : 'var(--tekst)'; d.style.fontWeight = i === this.broj ? '700' : '400'; }
+  },
+  sljedece(){
+    javi('');
+    if (this.broj >= 16){ this.kraj(); return; }
+    this.broj++; this.jokerNaPitanju = false;
+    const p = this.p = this.bazeni[this.zaOcjenu].pop();
+    this.ljestvica();
+    $('i-stanje').textContent = `Pitanje ${this.broj} od 16   ·   za ocjenu ${this.zaOcjenu}`;
+    $('i-stanje2').textContent = `Odustajanje → ocjena ${this.odustajanje}   ·   Pogrešan odgovor → ocjena ${this.osigurana}`;
+    napredak(this.broj, 16);
+    $('i-tekst').textContent = p.pitanje; postaviSliku(p.slika);
+    gumbiOdgovora(mijesaj([p.tocan, ...p.krivi]), o => this.odgovori(o));
+    $('i-odustani').disabled = false; this.jokerGumbi(true);
+    pokreniTimer(() => this.odgovori(null));
+  },
+  jokerGumbi(akt){ const ok = akt && !this.jokerNaPitanju; $('i-j1').disabled = !(ok && this.jokeri >= 2); $('i-j2').disabled = !(ok && this.jokeri >= 1); },
+  joker(){
+    if (this.jokeri <= 0 || this.jokerNaPitanju || this.gotovo) return;
+    const gumbi = [...$('i-odgovori').children], krivi = gumbi.filter(b => b.dataset.odgovor !== this.p.tocan);
+    mijesaj(krivi).slice(0,2).forEach(b => b.classList.add('skriven'));
+    this.jokeri--; this.jokerNaPitanju = true; this.jokerGumbi(true);
+  },
+  zavrsi(razlog, ocjena){ this.gotovo = true; rez.odlikas = {pitanje:this.p ? this.p.pitanje : '', razlog, ocjena}; },
+  odgovori(o){
+    if (this.gotovo) return;
+    zaustaviTimer(); const p = this.p; let r;
+    $('i-odgovori').innerHTML = ''; postaviSliku(null); $('i-odustani').disabled = true; this.jokerGumbi(false);
+    if (o === null){ zapisi(p.pitanje, p.tocan, 'vrijeme je isteklo', 0, p.bodovi, p.ocjena); this.zavrsi('ISTEKLO VRIJEME', this.osigurana); r = 'vrijeme'; }
+    else if (o === p.tocan){ zapisi(p.pitanje, o, o, p.bodovi, p.bodovi, p.ocjena); if (this.broj === 16) this.zavrsi('ODLIKAŠ!!!', 5); r = 'tocno'; }
+    else { zapisi(p.pitanje, p.tocan, o, p.bodnetoc, p.bodovi, p.ocjena); this.zavrsi('POGREŠAN ODGOVOR', this.osigurana); r = 'netocno'; }
+    if (r === 'tocno'){
+      let t = '✓  BRAVO! Odgovor je točan.', k = 'ok';
+      if (this.broj === 8){ t += '  Dvojka je osigurana!'; $('i-prag').textContent = '✓ Dvojka je osigurana\nDrugi prag je na 12. pitanju (ocjena 3)'; $('i-prag').className = 'prag ok'; }
+      if (this.broj === 12){ t += '  Trojka je osigurana!'; $('i-prag').textContent = '✓ Trojka je osigurana'; $('i-prag').className = 'prag ok'; }
+      if (this.broj === 16){ t = '★  O D L I K A Š !!!  ★'; k = 'zlato'; }
+      $('st'+this.broj).style.background = '#BBF7D0'; $('st'+this.broj).style.color = 'var(--tekst)';
+      javi(t, k); $('i-dalje').classList.remove('skriven'); $('i-dalje').focus();
+    } else {
+      $('st'+this.broj).style.background = 'var(--gr-s)'; $('st'+this.broj).style.color = 'var(--gr-t)';
+      javi(PORUKE[r === 'netocno' ? 'netocno' : 'vrijeme'][0] + '\nDobivena ocjena: ' + rez.odlikas.ocjena, 'greska');
+      setTimeout(() => this.kraj(), 2500);
+    }
+  },
+  odustani(){
+    if (this.gotovo || !confirm(`Odustati? Dobivena ocjena bit će ${this.odustajanje}.`)) return;
+    zaustaviTimer(); zapisi(this.p.pitanje, this.p.tocan, 'ODUSTAJANJE', 0, this.p.bodovi, this.p.ocjena);
+    this.zavrsi('ODUSTAJANJE', this.odustajanje); this.kraj();
+  },
+  kraj(){
+    if (!rez.odlikas) this.zavrsi('ODLIKAŠ!!!', 5);
+    alert(rez.odlikas.ocjena === 5 ? 'Čestitam, dobio si ocjenu ODLIČAN!!!' : `${rez.odlikas.razlog}\n\nDobivena ocjena: ${rez.odlikas.ocjena}`);
+    kraj();
+  }
+};
+$('i-j1').onclick = $('i-j2').onclick = () => Odlikas.joker();
+$('i-odustani').onclick = () => Odlikas.odustani();
+
+// ---------- izvještaj
+function kraj(){
+  zaustaviTimer(); window.onbeforeunload = null;
+  const odl = rez.vrsta === 'odlikas', u = rez.ucenik;
+  let h = `<div class="z"><h2>${odl ? 'ODLIKAŠ' : 'Rezultat ispita'}</h2><div>Ispit iz predmeta: ${esc(u.predmet)}</div></div><div class="s">`;
+  h += `<div class="podaci"><div>Učenik<b>${esc(u.prezime)}</b></div><div>Razred<b>${esc(u.razred)}</b></div><div>Datum<b>${esc(u.datum)}</b></div></div>`;
+  if (odl && rez.odlikas && rez.odlikas.ocjena === 5) h += '<p class="odlicno">&#9733; Čestitam, dobio si ocjenu ODLIČAN!!! &#9733;</p>';
+  h += `<table><tr><th>Pitanje</th><th>Odgovor</th><th>Točan odgovor</th>${odl ? '<th class="d">Ocjena</th>' : '<th class="d">Bodovi</th><th class="d">Mogući</th>'}</tr>`;
+  for (const r of rez.redovi){
+    const dan = norm(r.dan);
+    const k = odl ? (dan && dan === norm(r.tocan) ? 'ok' : ['vrijeme je isteklo','odustajanje'].includes(dan) ? 'nn' : 'ne')
+                  : (r.bodovi > 0 ? 'ok' : [norm(NE_ZNAM),'vrijeme je isteklo',''].includes(dan) ? 'nn' : 'ne');
+    h += `<tr class="${k}"><td>${esc(r.pitanje)}</td><td>${esc(r.dan)}</td><td>${esc(r.tocan)}</td>` +
+         (odl ? `<td class="d">${esc(r.ocjena)}</td>` : `<td class="d">${r.bodovi}</td><td class="d">${r.bodteor}</td>`) + '</tr>';
+  }
+  h += '</table><div class="kutije">';
+  if (odl){ const o = rez.odlikas;
+    h += `<div class="kut"><span>Zadnje pitanje</span>${esc(o.pitanje)}</div><div class="kut"><span>Završetak testa</span><b>${esc(o.razlog)}</b></div>` +
+         `<div class="kut glavni"><span>Dobivena ocjena</span><b>${o.ocjena}</b></div>`;
+  } else { const [o,m,p] = zbroj(), pp = (!o || o <= 0 || !p) ? 0 : p, lice = pp > 84 ? ' &#128079;' : pp < 45 ? ' &#128542;' : '';
+    h += `<div class="kut"><span>Ostvareni bodovi</span><b>${o}</b></div><div class="kut"><span>Mogući bodovi</span><b>${m}</b></div>` +
+         `<div class="kut glavni"><span>Postotak</span><b>${pp.toFixed(2)} %${lice}</b></div>`;
+  }
+  h += '</div><p class="potpis">Program napravio Petko Radulović, prof.</p></div>';
+  $('r-sadrzaj').innerHTML = h;
+  prikazi('izvjestaj');
+}
+$('r-novi').onclick = () => prikazi('pocetni');
+$('r-preuzmi').onclick = () => {
+  const css = [...document.styleSheets].map(s => [...s.cssRules].map(r => r.cssText).join('\n')).join('\n');
+  const html = `<!DOCTYPE html><html lang="hr"><head><meta charset="utf-8"><title>Izvještaj</title><style>${css}</style></head>` +
+               `<body><div class="izvj">${$('r-sadrzaj').innerHTML}</div></body></html>`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], {type:'text/html'}));
+  const d = new Date(), dd = n => String(n).padStart(2,'0');
+  a.download = `${d.getFullYear()}${dd(d.getMonth()+1)}${dd(d.getDate())}_${dd(d.getHours())}${dd(d.getMinutes())}_` +
+               rez.ucenik.prezime.replace(/[^\p{L}\p{N}_-]+/gu,'_') + '.html';
+  a.click();
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !$('ispit').classList.contains('skriven') && !$('i-dalje').classList.contains('skriven')
+      && document.activeElement !== $('i-dalje')){ e.preventDefault(); $('i-dalje').click(); }
+});
+</script>
+</body>
+</html>
